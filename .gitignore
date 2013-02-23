@@ -1,0 +1,9 @@
+*.session
+*.mk
+*.db
+*.tags
+working/
+testApp/
+output/
+Kasuku.workspace.stefano_d_mtangoo
+
