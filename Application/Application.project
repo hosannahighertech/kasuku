@@ -14,11 +14,11 @@
     <File Name="backend.cpp"/>
     <File Name="c_application.h"/>
     <File Name="c_application.cpp"/>
-    <File Name="cmainframe.cpp"/>
     <File Name="cmainframe.h"/>
     <File Name="images.h"/>
     <File Name="k_splash.h"/>
     <File Name="k_splash.cpp"/>
+    <File Name="cmainframe.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="resources">
     <File Name="cmainframebase.fbp"/>

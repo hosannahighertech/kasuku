@@ -11,16 +11,16 @@
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/intl.h>
-#include <wx/panel.h>
-#include <wx/gdicmn.h>
-#include <wx/font.h>
-#include <wx/colour.h>
-#include <wx/settings.h>
 #include <wx/string.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
-#include <wx/aui/auibook.h>
+#include <wx/menu.h>
+#include <wx/gdicmn.h>
+#include <wx/font.h>
+#include <wx/colour.h>
+#include <wx/settings.h>
+#include <wx/panel.h>
 #include <wx/stattext.h>
 #include <wx/slider.h>
 #include <wx/sizer.h>
@@ -28,7 +28,6 @@
 #include <wx/button.h>
 #include <wx/combobox.h>
 #include <wx/listctrl.h>
-#include <wx/menu.h>
 #include <wx/frame.h>
 #include <wx/aui/aui.h>
 
@@ -43,9 +42,9 @@ class CMainFrameBase : public wxFrame
 	private:
 	
 	protected:
-		wxAuiNotebook* m_playList;
-		wxPanel* m_audioPlaylist;
-		wxPanel* m_videoPlaylist;
+		wxMenuBar* m_menubar;
+		wxMenu* m_musicMenu;
+		wxMenu* m_helpMenu;
 		wxPanel* m_videoPanel;
 		wxPanel* m_display;
 		wxPanel* m_controlpanel;
@@ -64,11 +63,11 @@ class CMainFrameBase : public wxFrame
 		wxStaticText* m_staticText1;
 		wxComboBox* m_comboBox1;
 		wxListCtrl* m_fileList;
-		wxMenuBar* m_menubar;
-		wxMenu* m_musicMenu;
-		wxMenu* m_helpMenu;
 		
 		// Virtual event handlers, overide them in your derived class
+		virtual void OnQuitApp( wxCloseEvent& event ) { event.Skip(); }
+		virtual void OnLoadDir( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnAboutUs( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnFullVideoView( wxMouseEvent& event ) { event.Skip(); }
 		virtual void OnRightClickMenu( wxMouseEvent& event ) { event.Skip(); }
 		virtual void OnVideoSizeChanged( wxSizeEvent& event ) { event.Skip(); }
@@ -80,8 +79,6 @@ class CMainFrameBase : public wxFrame
 		virtual void OnPlayListShowHide( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnLoop( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnMediaDClicked( wxListEvent& event ) { event.Skip(); }
-		virtual void OnLoadDir( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnAboutUs( wxCommandEvent& event ) { event.Skip(); }
 		
 	
 	public:
