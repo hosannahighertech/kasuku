@@ -21,9 +21,9 @@
 #include <wx/colour.h>
 #include <wx/settings.h>
 #include <wx/panel.h>
+#include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/slider.h>
-#include <wx/sizer.h>
 #include <wx/bmpbuttn.h>
 #include <wx/button.h>
 #include <wx/combobox.h>
@@ -47,6 +47,7 @@ class CMainFrameBase : public wxFrame
 		wxMenu* m_helpMenu;
 		wxPanel* m_videoPanel;
 		wxPanel* m_display;
+		wxPanel* m_displayEventCatcher;
 		wxPanel* m_controlpanel;
 		wxStaticText* m_timeGone;
 		wxSlider* m_mediaPosition;
@@ -68,9 +69,11 @@ class CMainFrameBase : public wxFrame
 		virtual void OnQuitApp( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnLoadDir( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAboutUs( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnFullVideoView( wxMouseEvent& event ) { event.Skip(); }
-		virtual void OnRightClickMenu( wxMouseEvent& event ) { event.Skip(); }
 		virtual void OnVideoSizeChanged( wxSizeEvent& event ) { event.Skip(); }
+		virtual void OnEraseBGEventCatcher( wxEraseEvent& event ) { event.Skip(); }
+		virtual void OnFullVideoView( wxMouseEvent& event ) { event.Skip(); }
+		virtual void OnPaintEventCatecher( wxPaintEvent& event ) { event.Skip(); }
+		virtual void OnRightClickMenu( wxMouseEvent& event ) { event.Skip(); }
 		virtual void OnPlayPause( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnPrevious( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }

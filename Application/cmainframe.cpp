@@ -3,6 +3,7 @@
 #include <wx/aboutdlg.h>
 #include <wx/textfile.h>
 #include <wx/app.h>
+#include <wx/sysopt.h>
 #include "images.h"
 #include "k_config.h"
 
@@ -52,7 +53,9 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	Maximize();
 
 	m_splash->Destroy();//destroy splash and show the app
- 
+	
+	//system options
+	wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);
 }
 
 void CMainFrame::OnMediaDClicked(wxListEvent& e) {
@@ -408,6 +411,14 @@ void CMainFrame::OnPListItemChanged(wxCommandEvent& e) {
 void CMainFrame::OnQuitApp(wxCloseEvent& e)
 {
 	Destroy();
+}
+
+void CMainFrame::OnEraseBGEventCatcher(wxEraseEvent& event)
+{
+}
+
+void CMainFrame::OnPaintEventCatecher(wxPaintEvent& event)
+{
 }
 
 

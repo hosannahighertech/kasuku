@@ -57,6 +57,16 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_display = new wxPanel( m_videoPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNO_BORDER|wxTAB_TRAVERSAL );
 	m_display->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
 	
+	wxBoxSizer* bSizer71;
+	bSizer71 = new wxBoxSizer( wxVERTICAL );
+	
+	m_displayEventCatcher = new wxPanel( m_display, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	bSizer71->Add( m_displayEventCatcher, 1, wxEXPAND | wxALL, 0 );
+	
+	
+	m_display->SetSizer( bSizer71 );
+	m_display->Layout();
+	bSizer71->Fit( m_display );
 	bSizer2->Add( m_display, 1, wxEXPAND | wxALL, 0 );
 	
 	m_controlpanel = new wxPanel( m_videoPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
@@ -159,9 +169,11 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	this->Connect( m_importPL->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_openStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_about->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
-	m_display->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
-	m_display->Connect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_display->Connect( wxEVT_SIZE, wxSizeEventHandler( CMainFrameBase::OnVideoSizeChanged ), NULL, this );
+	m_displayEventCatcher->Connect( wxEVT_ERASE_BACKGROUND, wxEraseEventHandler( CMainFrameBase::OnEraseBGEventCatcher ), NULL, this );
+	m_displayEventCatcher->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
+	m_displayEventCatcher->Connect( wxEVT_PAINT, wxPaintEventHandler( CMainFrameBase::OnPaintEventCatecher ), NULL, this );
+	m_displayEventCatcher->Connect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_playPauseButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayPause ), NULL, this );
 	m_previousButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPrevious ), NULL, this );
 	m_stopButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnStop ), NULL, this );
@@ -180,9 +192,11 @@ CMainFrameBase::~CMainFrameBase()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
-	m_display->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
-	m_display->Disconnect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_display->Disconnect( wxEVT_SIZE, wxSizeEventHandler( CMainFrameBase::OnVideoSizeChanged ), NULL, this );
+	m_displayEventCatcher->Disconnect( wxEVT_ERASE_BACKGROUND, wxEraseEventHandler( CMainFrameBase::OnEraseBGEventCatcher ), NULL, this );
+	m_displayEventCatcher->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
+	m_displayEventCatcher->Disconnect( wxEVT_PAINT, wxPaintEventHandler( CMainFrameBase::OnPaintEventCatecher ), NULL, this );
+	m_displayEventCatcher->Disconnect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_playPauseButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayPause ), NULL, this );
 	m_previousButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPrevious ), NULL, this );
 	m_stopButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnStop ), NULL, this );
