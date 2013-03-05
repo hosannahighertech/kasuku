@@ -16,13 +16,15 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	wxBitmap bmpSplash = wxBITMAP_PNG(splash);
 	wxIcon appIcon;
 	//make icon from bitmap
-	appIcon.CopyFromBitmap(wxBITMAP_PNG(app));
+	appIcon.CopyFromBitmap(wxBITMAP_PNG(aaaaaaaaa));
 	//set app icon
 	if(appIcon.IsOk())
 		SetIcon(appIcon);
 	//create and start splash
 	m_splash = new KSplash(this, bmpSplash);
 	wxYield();
+	wxSleep(2); //show our splash at least two secs
+
 
 	//button Images
 	m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_play));
@@ -56,6 +58,8 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	
 	//system options
 	wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);
+	//refresh panel to reflesct new color
+	m_displayEventCatcher->Refresh(true);
 }
 
 void CMainFrame::OnMediaDClicked(wxListEvent& e) {
@@ -358,7 +362,7 @@ void CMainFrame::OnAboutUs(wxCommandEvent& event) {
 	//CAbout* dlg = new CAbout(this);
 	//dlg->Show();
 	wxAboutDialogInfo aboutInfo;
-	aboutInfo.SetName(_("Kasuku Media Player"));
+	aboutInfo.SetName(_("Kasuku Media Player (ALPHA VERSION) - "));
 	aboutInfo.SetVersion(MY_APP_VERSION_STRING);
 	aboutInfo.SetDescription(_("Sweet Kasuku Sound!"));
 	aboutInfo.SetCopyright("(C) 2012-2013, Tanzania Developers Foundation (TanDF)");

@@ -61,6 +61,8 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer71 = new wxBoxSizer( wxVERTICAL );
 	
 	m_displayEventCatcher = new wxPanel( m_display, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_displayEventCatcher->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
+	
 	bSizer71->Add( m_displayEventCatcher, 1, wxEXPAND | wxALL, 0 );
 	
 	
