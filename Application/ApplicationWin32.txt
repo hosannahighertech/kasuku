@@ -1,0 +1,1 @@
+../working/cmainframebase.o ../working/c_application.o ../working/cmainframe.o ../working/k_splash.o ../working/res.rc.o   

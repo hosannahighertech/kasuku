@@ -1,0 +1,16 @@
+
+aaaaaaaaa RCDATA "../icons/aaaaaaaaa.png"
+aaaaaaaaa ICON "../icons/aaaaaaaaa.ico"
+splash RCDATA "../icons/splash.png"
+control_play RCDATA "../icons/control_play.png"
+control_start RCDATA "../icons/control_start.png"
+control_stop RCDATA "../icons/control_stop.png"
+control_end RCDATA "../icons/control_end.png"
+control_fullscreen RCDATA "../icons/control_fullscreen.png"
+control_panel RCDATA "../icons/control_panel.png"
+control_repeat RCDATA "../icons/control_repeat.png"
+
+
+
+#include "wx/msw/wx.rc"
+1 24 "wx/msw/wx.manifest"

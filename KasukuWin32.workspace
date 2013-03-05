@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeLite_Workspace Name="Kasuku" Database="./Kasuku.tags">
+  <Environment>
+    <![CDATA[]]>
+  </Environment>
+  <Project Name="ApplicationWin32" Path="Application/ApplicationWin32.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="no">
+      <Project Name="ApplicationWin32" ConfigName="Debug"/>
+      <Project Name="ApplicationWin32" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
+      <Project Name="ApplicationWin32" ConfigName="Release"/>
+      <Project Name="ApplicationWin32" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
