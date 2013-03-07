@@ -1,13 +1,5 @@
-///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Oct  8 2012)
-// http://www.wxformbuilder.org/
-//
-// PLEASE DO "NOT" EDIT THIS FILE!
-///////////////////////////////////////////////////////////////////////////
-
 #include "cmainframebase.h"
 
-///////////////////////////////////////////////////////////////////////////
 
 CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
 {
@@ -54,22 +46,17 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer( wxVERTICAL );
 	
-	m_display = new wxPanel( m_videoPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNO_BORDER|wxTAB_TRAVERSAL );
-	m_display->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
+	m_display = new KImagePanel(m_videoPanel);
+	bSizer2->Add( m_display, 1, wxALL|wxEXPAND, 0 );
 	
-	wxBoxSizer* bSizer71;
-	bSizer71 = new wxBoxSizer( wxVERTICAL );
+	wxBoxSizer* bSizer9;
+	bSizer9 = new wxBoxSizer( wxVERTICAL );
 	
 	m_displayEventCatcher = new wxPanel( m_display, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	m_displayEventCatcher->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
 	
-	bSizer71->Add( m_displayEventCatcher, 1, wxEXPAND | wxALL, 0 );
-	
-	
-	m_display->SetSizer( bSizer71 );
-	m_display->Layout();
-	bSizer71->Fit( m_display );
-	bSizer2->Add( m_display, 1, wxEXPAND | wxALL, 0 );
+	bSizer9->Add( m_displayEventCatcher, 1, wxEXPAND | wxALL, 0 );	
+	bSizer2->Add( bSizer9, 0, wxEXPAND, 5 );
 	
 	m_controlpanel = new wxPanel( m_videoPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer6;
@@ -171,7 +158,6 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	this->Connect( m_importPL->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_openStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_about->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
-	m_display->Connect( wxEVT_SIZE, wxSizeEventHandler( CMainFrameBase::OnVideoSizeChanged ), NULL, this );
 	m_displayEventCatcher->Connect( wxEVT_ERASE_BACKGROUND, wxEraseEventHandler( CMainFrameBase::OnEraseBGEventCatcher ), NULL, this );
 	m_displayEventCatcher->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
 	m_displayEventCatcher->Connect( wxEVT_PAINT, wxPaintEventHandler( CMainFrameBase::OnPaintEventCatecher ), NULL, this );
@@ -194,7 +180,6 @@ CMainFrameBase::~CMainFrameBase()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
-	m_display->Disconnect( wxEVT_SIZE, wxSizeEventHandler( CMainFrameBase::OnVideoSizeChanged ), NULL, this );
 	m_displayEventCatcher->Disconnect( wxEVT_ERASE_BACKGROUND, wxEraseEventHandler( CMainFrameBase::OnEraseBGEventCatcher ), NULL, this );
 	m_displayEventCatcher->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
 	m_displayEventCatcher->Disconnect( wxEVT_PAINT, wxPaintEventHandler( CMainFrameBase::OnPaintEventCatecher ), NULL, this );

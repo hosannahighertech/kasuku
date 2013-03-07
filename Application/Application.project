@@ -19,6 +19,10 @@
     <File Name="k_splash.h"/>
     <File Name="k_splash.cpp"/>
     <File Name="cmainframe.cpp"/>
+    <File Name="k_image_panel.h"/>
+    <File Name="k_image_panel.cpp"/>
+    <File Name="k_file_importer.h"/>
+    <File Name="k_file_importer.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="resources">
     <File Name="cmainframebase.fbp"/>

@@ -5,11 +5,11 @@
   </Environment>
   <Project Name="ApplicationWin32" Path="Application/ApplicationWin32.project" Active="Yes"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="Debug" Selected="no">
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="ApplicationWin32" ConfigName="Debug"/>
       <Project Name="ApplicationWin32" ConfigName="Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Release" Selected="yes">
+    <WorkspaceConfiguration Name="Release" Selected="no">
       <Project Name="ApplicationWin32" ConfigName="Release"/>
       <Project Name="ApplicationWin32" ConfigName="Release"/>
     </WorkspaceConfiguration>

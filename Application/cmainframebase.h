@@ -1,9 +1,4 @@
-///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Oct  8 2012)
-// http://www.wxformbuilder.org/
-//
-// PLEASE DO "NOT" EDIT THIS FILE!
-///////////////////////////////////////////////////////////////////////////
+
 
 #ifndef __CMAINFRAMEBASE_H__
 #define __CMAINFRAMEBASE_H__
@@ -20,6 +15,7 @@
 #include <wx/font.h>
 #include <wx/colour.h>
 #include <wx/settings.h>
+#include "k_image_panel.h"
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -31,12 +27,7 @@
 #include <wx/frame.h>
 #include <wx/aui/aui.h>
 
-///////////////////////////////////////////////////////////////////////////
 
-
-///////////////////////////////////////////////////////////////////////////////
-/// Class CMainFrameBase
-///////////////////////////////////////////////////////////////////////////////
 class CMainFrameBase : public wxFrame 
 {
 	private:
@@ -46,7 +37,7 @@ class CMainFrameBase : public wxFrame
 		wxMenu* m_musicMenu;
 		wxMenu* m_helpMenu;
 		wxPanel* m_videoPanel;
-		wxPanel* m_display;
+		KImagePanel* m_display;
 		wxPanel* m_displayEventCatcher;
 		wxPanel* m_controlpanel;
 		wxStaticText* m_timeGone;
@@ -69,7 +60,6 @@ class CMainFrameBase : public wxFrame
 		virtual void OnQuitApp( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnLoadDir( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAboutUs( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnVideoSizeChanged( wxSizeEvent& event ) { event.Skip(); }
 		virtual void OnEraseBGEventCatcher( wxEraseEvent& event ) { event.Skip(); }
 		virtual void OnFullVideoView( wxMouseEvent& event ) { event.Skip(); }
 		virtual void OnPaintEventCatecher( wxPaintEvent& event ) { event.Skip(); }

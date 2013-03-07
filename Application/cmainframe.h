@@ -54,6 +54,7 @@ private:
 
 	void InitBindEvents();
 	void InitVLC();
+	void InitConfig();//configurations goes here!
 
 	void OnVideoSizeChanged(wxSizeEvent& e);
 	void OnFullVideoView(wxMouseEvent& event);  //Video window double Clicked
@@ -75,6 +76,7 @@ private:
 	void OnUpdateMediaPosition(wxCommandEvent& e);
 	void OnPListItemChanged(wxCommandEvent& e);
 	void OnQuitApp(wxCloseEvent& e);
+	void OnCloseApp(wxCommandEvent& e);
 
 	//hackish but works for video full screen in windows
 	void OnEraseBGEventCatcher(wxEraseEvent& event);

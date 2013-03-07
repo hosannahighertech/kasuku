@@ -6,12 +6,13 @@
 #include <wx/sysopt.h>
 #include "images.h"
 #include "k_config.h"
+#include "k_file_importer.h"
 
 wxDEFINE_EVENT(KEVT_MEDIA_PLAY_ON_PROGRESS, wxCommandEvent);
 wxDEFINE_EVENT(KEVT_MEDIA_PLAY_FINISHED, wxCommandEvent);
 wxDEFINE_EVENT(KEVT_MEDIA_LIST_NEXT_ITEM_SET, wxCommandEvent);
 
-CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
+CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {   
 	//splash
 	wxBitmap bmpSplash = wxBITMAP_PNG(splash);
 	wxIcon appIcon;
@@ -52,14 +53,14 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	m_pbMode = libvlc_playback_mode_default;
 
 	InitBindEvents();
+	InitConfig();
 	Maximize();
 
 	m_splash->Destroy();//destroy splash and show the app
 	
 	//system options
-	wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);
-	//refresh panel to reflesct new color
-	m_displayEventCatcher->Refresh(true);
+	wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);  	
+	
 }
 
 void CMainFrame::OnMediaDClicked(wxListEvent& e) {
@@ -106,34 +107,43 @@ void CMainFrame::OnLoadDir(wxCommandEvent& event) {
 	for(int i=0; i<libvlc_media_list_count(m_vlcMediaList); i++)
 		libvlc_media_list_remove_index(m_vlcMediaList, i);
 
-	wxString filename;
-	bool cont = dir.GetFirst(&filename, wxT("*.*"));
-	int idx = 0;
-	while(cont) {
-		if(filename.AfterLast('.').Lower()==wxT("mp3")||filename.AfterLast('.').Lower()==wxT("ogg")
-		        ||filename.AfterLast('.').Lower()==wxT("flv")||filename.AfterLast('.').Lower()==wxT("mp4")
-		        ||filename.AfterLast('.').Lower()==wxT("mov")||filename.AfterLast('.').Lower()==wxT("wmv")
-		  ) {
+//should we recurse in subfolders?
+	wxMessageDialog* confirmdlg = new wxMessageDialog(this, _("Do you want to add media in subfolders also?"), _("Confirm Recursing"), wxYES_NO|wxICON_INFORMATION|wxNO_DEFAULT);
+	if(confirmdlg->ShowModal()!=wxID_YES) {
+		wxString filename;
+		bool cont = dir.GetFirst(&filename, wxT("*.*"));
+		int idx = 0;
+		while(cont) {
+			if(filename.AfterLast('.').Lower()==wxT("mp3")||filename.AfterLast('.').Lower()==wxT("ogg")
+			        ||filename.AfterLast('.').Lower()==wxT("flv")||filename.AfterLast('.').Lower()==wxT("mp4")
+			        ||filename.AfterLast('.').Lower()==wxT("mov")||filename.AfterLast('.').Lower()==wxT("wmv")
+			  ) {
 
-			//Set up media for this path
-			m_media = libvlc_media_new_path(m_vlcInst, (path+wxFileName::GetPathSeparator()+filename).ToStdString().c_str());
-			libvlc_media_parse(m_media);
+				//Set up media for this path
+				m_media = libvlc_media_new_path(m_vlcInst, (path+wxFileName::GetPathSeparator()+filename).ToStdString().c_str());
+				libvlc_media_parse(m_media);
 
-			//add to media list
-			//lock first
-			libvlc_media_list_lock(m_vlcMediaList);
-			libvlc_media_list_add_media(m_vlcMediaList, m_media);
-			libvlc_media_list_unlock(m_vlcMediaList);
+				//add to media list
+				//lock first
+				libvlc_media_list_lock(m_vlcMediaList);
+				libvlc_media_list_add_media(m_vlcMediaList, m_media);
+				libvlc_media_list_unlock(m_vlcMediaList);
 
-			long itemIndex = m_fileList->InsertItem(idx, wxString(libvlc_media_get_meta(m_media,libvlc_meta_TrackNumber))); //Col 1 for track
-			m_fileList->SetItem(itemIndex, idx+1, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Title))); //Col 1 for title
-			m_fileList->SetItem(itemIndex, idx+2, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Artist))); //col 2 for artist
-			m_fileList->SetItem(itemIndex, idx+3, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Album))); //col 3 for Album
-			m_fileList->SetItem(itemIndex, idx+4, path+wxFileName::GetPathSeparator()+filename); //col 4 for Full Path
- 
-		}
-		cont = dir.GetNext(&filename);
+				long itemIndex = m_fileList->InsertItem(idx, wxString(libvlc_media_get_meta(m_media,libvlc_meta_TrackNumber))); //Col 1 for track
+				m_fileList->SetItem(itemIndex, idx+1, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Title))); //Col 1 for title
+				m_fileList->SetItem(itemIndex, idx+2, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Artist))); //col 2 for artist
+				m_fileList->SetItem(itemIndex, idx+3, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Album))); //col 3 for Album
+				m_fileList->SetItem(itemIndex, idx+4, path+wxFileName::GetPathSeparator()+filename); //col 4 for Full Path
+
+			}
+			cont = dir.GetNext(&filename);
+		} 
 	}
+	else {
+		KFileImporter traverser(m_fileList, m_vlcInst, m_vlcMediaList);
+		dir.Traverse(traverser);
+	}
+
 
 	//set col width
 	m_fileList->SetColumnWidth(0, wxLIST_AUTOSIZE);
@@ -155,6 +165,8 @@ void CMainFrame::InitBindEvents() {
 
 	m_volumeSlider->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &CMainFrame::OnVolumeChanging, this);
 	m_mediaPosition->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &CMainFrame::OnMediaSliderMoved, this);
+
+	Bind(wxEVT_COMMAND_MENU_SELECTED, &CMainFrame::OnCloseApp, this, wxID_EXIT);
 }
 
 void CMainFrame::OnFullVideoView(wxMouseEvent& event) {
@@ -232,7 +244,7 @@ void CMainFrame::OnPlayPause(wxCommandEvent& event) {
 		//is playing change the icon to pause and play
 		m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_pause));
 		//play
-		libvlc_media_player_pause(m_mediaPlayer);
+		libvlc_media_player_play(m_mediaPlayer);
 
 	}
 }
@@ -249,7 +261,7 @@ void CMainFrame::OnVolumeChanging(wxCommandEvent& event) {
 
 
 void CMainFrame::OnStop(wxCommandEvent& event) {
-	libvlc_media_player_stop(m_mediaPlayer);
+	libvlc_media_list_player_stop(m_vlcMediaListPlayer);
 	//change button to player
 	m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_play));
 	m_mediaPosition->SetValue(0);
@@ -355,6 +367,14 @@ void CMainFrame::SetLabels() {
 	int sec = secs % 60;
 	wxString label = wxString::Format(wxT("%d:%d:%d"), hour, min, sec);
 	m_timeLength->SetLabel(label);
+	
+	//if the panel have no video do show kasuku foto
+	//XilasZ_work in vlc IRC:has_vout return the number of vout. it's not the same thing, you can have a vout but no video track (audio file with visualization for instance)
+	if(!libvlc_media_player_has_vout(m_mediaPlayer))
+	{
+		//show image here!
+	}
+	
 	Layout();
 }
 
@@ -372,7 +392,7 @@ void CMainFrame::OnAboutUs(wxCommandEvent& event) {
 	//developers
 	aboutInfo.AddDeveloper(_("Stefano Mtangoo (Lead Developer)"));
 	//artists
-	aboutInfo.AddArtist(_("C6 (Lead Artist)"));
+	aboutInfo.AddArtist(_("Joe Nyandigira (C6) - (Lead Artist)"));
 	//other contributors
 	wxAboutBox(aboutInfo);
 }
@@ -412,8 +432,7 @@ void CMainFrame::OnPListItemChanged(wxCommandEvent& e) {
 	m_fileList->SetFocus();
 }
 
-void CMainFrame::OnQuitApp(wxCloseEvent& e)
-{
+void CMainFrame::OnQuitApp(wxCloseEvent& e) {
 	Destroy();
 }
 
@@ -421,8 +440,16 @@ void CMainFrame::OnEraseBGEventCatcher(wxEraseEvent& event)
 {
 }
 
-void CMainFrame::OnPaintEventCatecher(wxPaintEvent& event)
+void CMainFrame::OnPaintEventCatecher(wxPaintEvent& event) {
+}
+
+void CMainFrame::OnCloseApp(wxCommandEvent& e) {
+	Close();
+}
+
+void CMainFrame::InitConfig()
 {
+	m_plPanel->Show(false);//should be according to settings
 }
 
 
