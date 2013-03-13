@@ -32,6 +32,7 @@ bool KDropTarget::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenam
 
 		}
 	}
+	return true;
 }
 
 void KDropTarget::InitVLCArgs(libvlc_instance_t* vlcInst, libvlc_media_list_t* vlcMediaList)
