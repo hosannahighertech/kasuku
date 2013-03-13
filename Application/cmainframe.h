@@ -34,7 +34,8 @@ wxDECLARE_EVENT(KEVT_MEDIA_PLAY_PLAYING, wxCommandEvent);
 #define MY_APP_VERSION_STRING _("1.0.0")
 
 /** Implementing CMainFrameBase */
-class CMainFrame : public CMainFrameBase {
+class CMainFrame : public CMainFrameBase
+{
 protected:
 	// Handlers for CMainFrameBase events.
 	void OnMediaDClicked(wxListEvent& event);
@@ -91,14 +92,17 @@ private:
 	void OnEraseBGEventCatcher(wxEraseEvent& event);
 	void OnPaintEventCatecher(wxPaintEvent& event);
 
+	virtual void OnKeyPressed( wxKeyEvent& event );
+
 	//hover the media screen
-	void OnHoverCtrl(wxMouseEvent& event) ; 
+	void OnHoverCtrl(wxMouseEvent& event) ;
 
 	//drag and drop
 	void OnBeginDragFiles(wxListEvent& e);// drag from wxLC may be to your desktop
 
 	void ToggleScreen();
 	void PlayMedia(const wxString& path);
+	void LoadFiles(const wxArrayString& paths, bool clearPList = true);
 
 	void SetLabels();
 
@@ -113,7 +117,7 @@ private:
 
 	//these classes are part of functionalities in media. So they are friends
 	friend class VideoCtrlPopup;
-	
+
 };
 
 

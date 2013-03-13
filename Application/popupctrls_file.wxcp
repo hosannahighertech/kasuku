@@ -154,7 +154,13 @@
 									"m_label":	"Include File:",
 									"m_value":	""
 								}],
-							"m_events":	[],
+							"m_events":	[{
+									"m_eventName":	"wxEVT_RIGHT_DOWN",
+									"m_eventClass":	"wxMouseEvent",
+									"m_eventHandler":	"wxMouseEventHandler",
+									"m_functionNameAndSignature":	"OnRightClick(wxMouseEvent& event)",
+									"m_description":	"Process a wxEVT_RIGHT_DOWN event"
+								}],
 							"m_children":	[{
 									"m_type":	4401,
 									"proportion":	0,

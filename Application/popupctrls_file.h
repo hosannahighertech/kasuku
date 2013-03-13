@@ -29,6 +29,7 @@ protected:
 
 protected:
     virtual void OnLeaveWindow(wxMouseEvent& event) { event.Skip(); }
+    virtual void OnRightClick(wxMouseEvent& event) { event.Skip(); }
     virtual void OnPositionChanged(wxScrollEvent& event) { event.Skip(); }
     virtual void OnPrevious(wxCommandEvent& event) { event.Skip(); }
     virtual void OnPlayPause(wxCommandEvent& event) { event.Skip(); }

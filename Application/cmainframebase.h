@@ -68,6 +68,7 @@ class CMainFrameBase : public wxFrame
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnQuitApp( wxCloseEvent& event ) { event.Skip(); }
+		virtual void OnKeyPressed( wxKeyEvent& event ) { event.Skip(); }
 		virtual void OnOpenFile( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnOpenStream( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnLoadDir( wxCommandEvent& event ) { event.Skip(); }

@@ -45,12 +45,16 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "C:\hosanna\kasuku\output\ApplicationWin32.exe"; DestDir: "{app}"; DestName: "kasuku.exe"
 Source: "C:\hosanna\kasuku\output\plugins\*"; DestDir: "{app}\plugins"; Flags: createallsubdirs recursesubdirs
 Source: "C:\hosanna\kasuku\Application\eula\gpl.txt"; DestDir: "{userappdata}\eula"; DestName: "licence.txt"
-Source: "C:\hosanna\kasuku\output\libvlc.dll"; DestDir: "{app}"
-Source: "C:\hosanna\kasuku\output\libvlccore.dll"; DestDir: "{app}"
-Source: "C:\hosanna\kasuku\output\wxbase295u_gcc_custom.dll"; DestDir: "{app}"
-Source: "C:\hosanna\kasuku\output\wxmsw295u_adv_gcc_custom.dll"; DestDir: "{app}"
-Source: "C:\hosanna\kasuku\output\wxmsw295u_aui_gcc_custom.dll"; DestDir: "{app}"
-Source: "C:\hosanna\kasuku\output\wxmsw295u_core_gcc_custom.dll"; DestDir: "{app}"
+Source: "C:\hosanna\kasuku\output\libvlc.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\libvlccore.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxbase295u_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxbase295u_net_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxbase295u_xml_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxmsw295u_adv_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxmsw295u_aui_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxmsw295u_core_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxmsw295u_html_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\hosanna\kasuku\output\wxmsw295u_xrc_gcc_custom.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

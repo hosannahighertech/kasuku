@@ -66,7 +66,7 @@
             <event name="OnHibernate"></event>
             <event name="OnIconize"></event>
             <event name="OnIdle"></event>
-            <event name="OnKeyDown"></event>
+            <event name="OnKeyDown">OnKeyPressed</event>
             <event name="OnKeyUp"></event>
             <event name="OnKillFocus"></event>
             <event name="OnLeaveWindow"></event>
@@ -142,7 +142,7 @@
                         <property name="help"></property>
                         <property name="id">wxID_OPEN</property>
                         <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">Open File</property>
+                        <property name="label">Open File(s)</property>
                         <property name="name">m_m_openFile</property>
                         <property name="permission">none</property>
                         <property name="shortcut">Ctrl+O</property>
@@ -336,16 +336,16 @@
                 <event name="OnSetFocus"></event>
                 <event name="OnSize"></event>
                 <event name="OnUpdateUI"></event>
-                <object class="wxBoxSizer" expanded="1">
+                <object class="wxBoxSizer" expanded="0">
                     <property name="minimum_size"></property>
                     <property name="name">bSizer2</property>
                     <property name="orient">wxVERTICAL</property>
                     <property name="permission">none</property>
-                    <object class="sizeritem" expanded="1">
+                    <object class="sizeritem" expanded="0">
                         <property name="border">0</property>
                         <property name="flag">wxALL|wxEXPAND</property>
                         <property name="proportion">1</property>
-                        <object class="wxPanel" expanded="1">
+                        <object class="wxPanel" expanded="0">
                             <property name="BottomDockable">1</property>
                             <property name="LeftDockable">1</property>
                             <property name="RightDockable">1</property>
@@ -419,16 +419,16 @@
                             <event name="OnSetFocus"></event>
                             <event name="OnSize"></event>
                             <event name="OnUpdateUI"></event>
-                            <object class="wxBoxSizer" expanded="1">
+                            <object class="wxBoxSizer" expanded="0">
                                 <property name="minimum_size"></property>
                                 <property name="name">bSizer9</property>
                                 <property name="orient">wxVERTICAL</property>
                                 <property name="permission">none</property>
-                                <object class="sizeritem" expanded="1">
+                                <object class="sizeritem" expanded="0">
                                     <property name="border">0</property>
                                     <property name="flag">wxALL|wxEXPAND</property>
                                     <property name="proportion">1</property>
-                                    <object class="CustomControl" expanded="1">
+                                    <object class="CustomControl" expanded="0">
                                         <property name="BottomDockable">1</property>
                                         <property name="LeftDockable">1</property>
                                         <property name="RightDockable">1</property>
@@ -492,12 +492,12 @@
                                         <event name="OnKillFocus"></event>
                                         <event name="OnLeaveWindow"></event>
                                         <event name="OnLeftDClick">OnFullVideoView</event>
-                                        <event name="OnLeftDown"></event>
+                                        <event name="OnLeftDown">OnHoverCtrl</event>
                                         <event name="OnLeftUp"></event>
                                         <event name="OnMiddleDClick"></event>
                                         <event name="OnMiddleDown"></event>
                                         <event name="OnMiddleUp"></event>
-                                        <event name="OnMotion">OnHoverCtrl</event>
+                                        <event name="OnMotion"></event>
                                         <event name="OnMouseEvents"></event>
                                         <event name="OnMouseWheel"></event>
                                         <event name="OnPaint"></event>
@@ -1663,11 +1663,11 @@
                             </object>
                         </object>
                     </object>
-                    <object class="sizeritem" expanded="1">
+                    <object class="sizeritem" expanded="0">
                         <property name="border">5</property>
                         <property name="flag">wxEXPAND | wxALL</property>
                         <property name="proportion">1</property>
-                        <object class="wxPanel" expanded="1">
+                        <object class="wxPanel" expanded="0">
                             <property name="BottomDockable">1</property>
                             <property name="LeftDockable">1</property>
                             <property name="RightDockable">1</property>
@@ -1741,7 +1741,7 @@
                             <event name="OnSetFocus"></event>
                             <event name="OnSize"></event>
                             <event name="OnUpdateUI"></event>
-                            <object class="wxBoxSizer" expanded="1">
+                            <object class="wxBoxSizer" expanded="0">
                                 <property name="minimum_size"></property>
                                 <property name="name">bSizer3</property>
                                 <property name="orient">wxVERTICAL</property>

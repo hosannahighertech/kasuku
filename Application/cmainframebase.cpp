@@ -18,7 +18,7 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_menubar = new wxMenuBar( 0 );
 	m_musicMenu = new wxMenu();
 	wxMenuItem* m_m_openFile;
-	m_m_openFile = new wxMenuItem( m_musicMenu, wxID_OPEN, wxString( _("Open File") ) + wxT('\t') + wxT("Ctrl+O"), wxEmptyString, wxITEM_NORMAL );
+	m_m_openFile = new wxMenuItem( m_musicMenu, wxID_OPEN, wxString( _("Open File(s)") ) + wxT('\t') + wxT("Ctrl+O"), wxEmptyString, wxITEM_NORMAL );
 	m_musicMenu->Append( m_m_openFile );
 	
 	wxMenuItem* m_openStream;
@@ -179,13 +179,14 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	// Connect Events
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( CMainFrameBase::OnQuitApp ) );
+	this->Connect( wxEVT_KEY_DOWN, wxKeyEventHandler( CMainFrameBase::OnKeyPressed ) );
 	this->Connect( m_m_openFile->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenFile ) );
 	this->Connect( m_openStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenStream ) );
 	this->Connect( m_LoadFolder->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_importPL->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_about->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
 	m_displayEventCatcher->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
-	m_displayEventCatcher->Connect( wxEVT_MOTION, wxMouseEventHandler( CMainFrameBase::OnHoverCtrl ), NULL, this );
+	m_displayEventCatcher->Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( CMainFrameBase::OnHoverCtrl ), NULL, this );
 	m_displayEventCatcher->Connect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_playPauseButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayPause ), NULL, this );
 	m_previousButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPrevious ), NULL, this );
@@ -202,13 +203,14 @@ CMainFrameBase::~CMainFrameBase()
 {
 	// Disconnect Events
 	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( CMainFrameBase::OnQuitApp ) );
+	this->Disconnect( wxEVT_KEY_DOWN, wxKeyEventHandler( CMainFrameBase::OnKeyPressed ) );
 	this->Disconnect( wxID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenFile ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenStream ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
 	m_displayEventCatcher->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
-	m_displayEventCatcher->Disconnect( wxEVT_MOTION, wxMouseEventHandler( CMainFrameBase::OnHoverCtrl ), NULL, this );
+	m_displayEventCatcher->Disconnect( wxEVT_LEFT_DOWN, wxMouseEventHandler( CMainFrameBase::OnHoverCtrl ), NULL, this );
 	m_displayEventCatcher->Disconnect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_playPauseButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayPause ), NULL, this );
 	m_previousButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPrevious ), NULL, this );

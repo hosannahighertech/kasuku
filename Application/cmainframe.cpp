@@ -17,7 +17,8 @@ wxDEFINE_EVENT(KEVT_MEDIA_PLAY_FINISHED, wxCommandEvent);
 wxDEFINE_EVENT(KEVT_MEDIA_LIST_NEXT_ITEM_SET, wxCommandEvent);
 wxDEFINE_EVENT(KEVT_MEDIA_PLAY_PLAYING, wxCommandEvent);
 
-CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
+CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent)
+{
 	//splash
 	wxBitmap bmpSplash = wxBITMAP_PNG(splash);
 	wxIcon appIcon;
@@ -53,13 +54,13 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	m_mediaPosition->SetValue(0);
 
 	m_volumeSlider->SetRange(0, VOLUME_MAX);
-	
+
 	//popup
 	m_ctrlPopup = new VideoCtrlPopup(this);
 	m_ctrlPopup->m_volumeCtrl->SetRange(0, m_volumeSlider->GetMax());
 	m_ctrlPopup->m_positionctrl->SetRange(0, m_mediaPosition->GetMax());
 	m_ctrlPopup->Hide();
-	
+
 	//VLC Stuffs
 	InitVLC();
 	m_pbMode = libvlc_playback_mode_default;
@@ -80,7 +81,8 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 
 }
 
-void CMainFrame::OnMediaDClicked(wxListEvent& e) {
+void CMainFrame::OnMediaDClicked(wxListEvent& e)
+{
 	/*wxListItem row_info = e.GetItem();
 	wxString path;
 	// Set what row it is (m_itemId is a member of the regular wxListCtrl class)
@@ -103,7 +105,8 @@ void CMainFrame::OnMediaDClicked(wxListEvent& e) {
 	SetLabels();
 }
 
-void CMainFrame::OnLoadDir(wxCommandEvent& event) {
+void CMainFrame::OnLoadDir(wxCommandEvent& event)
+{
 	wxDirDialog dlg(NULL, "Choose Media Directory", "",
 	                wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
 	if(dlg.ShowModal()!=wxID_OK)
@@ -118,70 +121,42 @@ void CMainFrame::OnLoadDir(wxCommandEvent& event) {
 		return;
 	}
 
-	//clear current Item
-	m_fileList->DeleteAllItems();
-	libvlc_media_list_player_stop(m_vlcMediaListPlayer);
-	libvlc_media_list_lock(m_vlcMediaList);
-	int mCount = libvlc_media_list_count(m_vlcMediaList);
-	libvlc_media_list_unlock(m_vlcMediaList);
-	for(int i=0; i<mCount; i++) {
-		libvlc_media_list_lock(m_vlcMediaList);
-		libvlc_media_list_remove_index(m_vlcMediaList, i);
-		libvlc_media_list_unlock(m_vlcMediaList);
-	}
-//should we recurse in subfolders?
-	wxMessageDialog* confirmdlg = new wxMessageDialog(this, _("Do you want to add media in subfolders also?"), _("Confirm Recursing"), wxYES_NO|wxICON_INFORMATION|wxNO_DEFAULT);
-	if(confirmdlg->ShowModal()!=wxID_YES) {
-		wxString filename;
-		bool cont = dir.GetFirst(&filename, wxT("*.*"));
-		int idx = 0;
-		while(cont) {
-			if(filename.AfterLast('.').Lower()==wxT("mp3")||filename.AfterLast('.').Lower()==wxT("ogg")
-			        ||filename.AfterLast('.').Lower()==wxT("flv")||filename.AfterLast('.').Lower()==wxT("mp4")
-			        ||filename.AfterLast('.').Lower()==wxT("mov")||filename.AfterLast('.').Lower()==wxT("wmv")
-			  ) {
+	//should we recurse in subfolders?
+	if(dir.HasSubDirs()) {
+		wxMessageDialog* confirmdlg = new wxMessageDialog(this, _("Do you want to add media in subfolders also?"), _("Confirm Recursing"), wxYES_NO|wxICON_INFORMATION|wxNO_DEFAULT);
+		if(confirmdlg->ShowModal()!=wxID_YES) {
+			wxArrayString filenames;
+			wxDir::GetAllFiles(path, &filenames, wxT("*.*"));
+			wxMessageDialog* confirmdlg = new wxMessageDialog(this, _("Clear The Playlist Before Append?"), _("Confirm Action"), wxYES_NO|wxICON_INFORMATION|wxNO_DEFAULT);
+			if(confirmdlg->ShowModal()!=wxID_YES) {
+				LoadFiles(filenames, true);
+			} else
+				LoadFiles(filenames, false);
 
-				//Set up media for this path
-				m_media = libvlc_media_new_path(m_vlcInst, (path+wxFileName::GetPathSeparator()+filename).ToStdString().c_str());
-				libvlc_media_parse(m_media);
-
-				//add to media list
-				//lock first
-				libvlc_media_list_lock(m_vlcMediaList);
-				libvlc_media_list_add_media(m_vlcMediaList, m_media);
-				libvlc_media_list_unlock(m_vlcMediaList);
-
-				long itemIndex = m_fileList->InsertItem(idx, wxString(libvlc_media_get_meta(m_media,libvlc_meta_TrackNumber))); //Col 1 for track
-				m_fileList->SetItem(itemIndex, idx+1, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Title))); //Col 1 for title
-				m_fileList->SetItem(itemIndex, idx+2, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Artist))); //col 2 for artist
-				m_fileList->SetItem(itemIndex, idx+3, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Album))); //col 3 for Album
-				m_fileList->SetItem(itemIndex, idx+4, path+wxFileName::GetPathSeparator()+filename); //col 4 for Full Path
-
-			}
-			cont = dir.GetNext(&filename);
+		} else {
+			KFileImporter traverser(m_fileList, m_vlcInst, m_vlcMediaList);
+			dir.Traverse(traverser);
 		}
+	} else {
+		wxArrayString filenames;
+		wxDir::GetAllFiles(path, &filenames, wxT("*.*"));
+		wxMessageDialog* confirmdlg = new wxMessageDialog(this, _("Clear The Playlist Before Append?"), _("Confirm Action"), wxYES_NO|wxICON_INFORMATION|wxNO_DEFAULT);
+		if(confirmdlg->ShowModal()!=wxID_YES) {
+			LoadFiles(filenames, true);
+		} else
+			LoadFiles(filenames, false);
 	}
-	else {
-		KFileImporter traverser(m_fileList, m_vlcInst, m_vlcMediaList);
-		dir.Traverse(traverser);
-	}
-
-
-	//set col width
-	m_fileList->SetColumnWidth(0, wxLIST_AUTOSIZE);
-	m_fileList->SetColumnWidth(1, wxLIST_AUTOSIZE);
-	m_fileList->SetColumnWidth(2, wxLIST_AUTOSIZE);
-	m_fileList->SetColumnWidth(3, wxLIST_AUTOSIZE);
-	m_fileList->SetColumnWidth(4, wxLIST_AUTOSIZE);
 }
 
 
-void CMainFrame::OnVideoSizeChanged(wxSizeEvent& e) {
+void CMainFrame::OnVideoSizeChanged(wxSizeEvent& e)
+{
 
 	e.Skip(true);
 }
 
-void CMainFrame::InitBindEvents() {
+void CMainFrame::InitBindEvents()
+{
 	Bind(KEVT_MEDIA_PLAY_ON_PROGRESS, &CMainFrame::OnUpdateMediaPosition, this, wxID_ANY);
 	Bind(KEVT_MEDIA_LIST_NEXT_ITEM_SET, &CMainFrame::OnPListItemChanged, this, wxID_ANY);
 	Bind(KEVT_MEDIA_PLAY_FINISHED, &CMainFrame::OnPlayerEndReached, this, wxID_ANY);
@@ -193,20 +168,24 @@ void CMainFrame::InitBindEvents() {
 	Bind(wxEVT_COMMAND_MENU_SELECTED, &CMainFrame::OnCloseApp, this, wxID_EXIT);
 }
 
-void CMainFrame::OnFullVideoView(wxMouseEvent& event) {
+void CMainFrame::OnFullVideoView(wxMouseEvent& event)
+{
 	ToggleScreen();
 }
 
-void CMainFrame::OnRightClickMenu(wxMouseEvent& event) {
+void CMainFrame::OnRightClickMenu(wxMouseEvent& event)
+{
 }
 
-void CMainFrame::OnMediaSliderMoved(wxCommandEvent& event) {
+void CMainFrame::OnMediaSliderMoved(wxCommandEvent& event)
+{
 	libvlc_media_player_set_position(m_mediaPlayer, (float) event.GetInt() / (float) TIMELINE_MAX);
 	//syc the popup controls
 	m_ctrlPopup->m_positionctrl->SetValue(m_mediaPosition->GetValue());
 }
 
-void CMainFrame::OnLoop(wxCommandEvent& event) {
+void CMainFrame::OnLoop(wxCommandEvent& event)
+{
 	switch(m_pbMode) {
 	case libvlc_playback_mode_default 	: {
 		//its default mode move it to loop
@@ -232,26 +211,28 @@ void CMainFrame::OnLoop(wxCommandEvent& event) {
 	}
 }
 
-void CMainFrame::OnNext(wxCommandEvent& event) {
+void CMainFrame::OnNext(wxCommandEvent& event)
+{
 	libvlc_media_list_player_next(m_vlcMediaListPlayer);
 	SetLabels();
 }
 
 
-void CMainFrame::OnPrevious(wxCommandEvent& event) {
+void CMainFrame::OnPrevious(wxCommandEvent& event)
+{
 	libvlc_media_list_player_previous(m_vlcMediaListPlayer);
 	SetLabels();
 }
 
 
-void CMainFrame::OnPlayListShowHide(wxCommandEvent& event) {
+void CMainFrame::OnPlayListShowHide(wxCommandEvent& event)
+{
 	if(m_plPanel->IsShown() && m_display->IsShown())//playlist is shown and video is shown--hide PL
 		m_plPanel->Show(false);
 	else if(!m_plPanel->IsShown() && m_display->IsShown()) { //PL hidden but vide shown-- hide Video
 		m_display->Show(false);
 		m_plPanel->Show(true);
-	}
-	else {
+	} else {
 		m_display->Show(true);
 		m_plPanel->Show(true);
 	}
@@ -259,14 +240,14 @@ void CMainFrame::OnPlayListShowHide(wxCommandEvent& event) {
 	Layout();
 }
 
-void CMainFrame::OnPlayPause(wxCommandEvent& event) {
+void CMainFrame::OnPlayPause(wxCommandEvent& event)
+{
 	if(libvlc_media_list_player_is_playing(m_vlcMediaListPlayer)==1) {
 		//is playing change the icon to play and pause
 		m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_play));
 		//pause
 		libvlc_media_list_player_pause(m_vlcMediaListPlayer);
-	}
-	else {
+	} else {
 		//is playing change the icon to pause and play
 		m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_pause));
 		//play
@@ -276,21 +257,24 @@ void CMainFrame::OnPlayPause(wxCommandEvent& event) {
 	SetLabels();
 }
 
-void CMainFrame::OnRandom(wxCommandEvent& event) {
+void CMainFrame::OnRandom(wxCommandEvent& event)
+{
 }
 
-void CMainFrame::OnVolumeChanging(wxCommandEvent& event) {
+void CMainFrame::OnVolumeChanging(wxCommandEvent& event)
+{
 	//int vol = event.GetPosition();
 	int vol = m_volumeSlider->GetValue();
-	
+
 	m_ctrlPopup->m_volumeCtrl->SetValue(vol);//sync popup ctrl
-	
+
 	if(libvlc_audio_set_volume(m_mediaPlayer, vol)!=0)
 		wxMessageBox(_("Failed to Set Volume!"), _("Error!"));
 }
 
 
-void CMainFrame::OnStop(wxCommandEvent& event) {
+void CMainFrame::OnStop(wxCommandEvent& event)
+{
 	libvlc_media_list_player_stop(m_vlcMediaListPlayer);
 	//change button to player
 	m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_play));
@@ -301,11 +285,13 @@ void CMainFrame::OnStop(wxCommandEvent& event) {
 	m_displayEventCatcher->Refresh();
 }
 
-void CMainFrame::OnToggleVideo(wxCommandEvent& event) {
+void CMainFrame::OnToggleVideo(wxCommandEvent& event)
+{
 	ToggleScreen();
 }
 
-void CMainFrame::ToggleScreen() {
+void CMainFrame::ToggleScreen()
+{
 	if(m_plPanel->IsShown() || m_controlpanel->IsShown()) {
 		//the Window is not full so hide them and make it full
 		m_plPanel->Show(false);
@@ -313,28 +299,30 @@ void CMainFrame::ToggleScreen() {
 		ShowFullScreen(true);//full screen view
 		//hide its borders also
 
-	}
-	else {
+	} else {
 		m_plPanel->Show(true);
 		m_controlpanel->Show(true);
 		ShowFullScreen(false);//full screen view
 		if(m_ctrlPopup)
-			m_ctrlPopup->HideWithEffect(wxSHOW_EFFECT_SLIDE_TO_LEFT, 900);//hide the window 
+			m_ctrlPopup->HideWithEffect(wxSHOW_EFFECT_SLIDE_TO_BOTTOM, 900);//hide the window
 	}
 }
 
-void CMainFrame::PlayMedia(const wxString& path) {
+void CMainFrame::PlayMedia(const wxString& path)
+{
 	libvlc_media_player_stop(m_mediaPlayer);
 	SetLabels();
 }
 
-CMainFrame::~CMainFrame() {
+CMainFrame::~CMainFrame()
+{
 	libvlc_media_list_player_release(m_vlcMediaListPlayer);//release media list Player!
 	libvlc_media_list_release(m_vlcMediaList);//release media list!
 	libvlc_release(m_vlcInst);
 }
 
-void CMainFrame::InitVLC() {
+void CMainFrame::InitVLC()
+{
 	//create media player instance
 	const char* argv[2] = {" --audio-visual visualizer --effect-list spectrum", NULL};  //NULL default
 	m_vlcInst = libvlc_new(0, argv /*NULL*/);
@@ -375,7 +363,8 @@ void CMainFrame::InitVLC() {
 	libvlc_event_attach(libvlc_media_list_player_event_manager(m_vlcMediaListPlayer), libvlc_MediaListPlayerNextItemSet,::CatchMediaEvents, m_vlcMediaList);
 }
 
-void CMainFrame::OnUpdateMediaPosition(wxCommandEvent& e) {
+void CMainFrame::OnUpdateMediaPosition(wxCommandEvent& e)
+{
 	float pos = libvlc_media_player_get_position(m_mediaPlayer);
 	if(pos < 0.0) pos = 0.0;
 	if(pos > 1.0) pos = 1.0;
@@ -391,7 +380,8 @@ void CMainFrame::OnUpdateMediaPosition(wxCommandEvent& e) {
 	Layout();
 }
 
-void CMainFrame::SetLabels() {
+void CMainFrame::SetLabels()
+{
 	int secs = libvlc_media_player_get_length(m_mediaPlayer)/1000;
 	if(secs==-1) {
 		//set lable empty
@@ -411,7 +401,8 @@ void CMainFrame::SetLabels() {
 	Layout();
 }
 
-void CMainFrame::OnAboutUs(wxCommandEvent& event) {
+void CMainFrame::OnAboutUs(wxCommandEvent& event)
+{
 	//CAbout* dlg = new CAbout(this);
 	//dlg->Show();
 	wxAboutDialogInfo aboutInfo;
@@ -431,7 +422,8 @@ void CMainFrame::OnAboutUs(wxCommandEvent& event) {
 }
 
 
-wxString CMainFrame::GetLicence() {
+wxString CMainFrame::GetLicence()
+{
 	wxTextFile  input;
 	wxString text=wxT("");
 	/*input.Open(KConfig::Instance()->GetLicenceFile());
@@ -442,7 +434,8 @@ wxString CMainFrame::GetLicence() {
 	return text;
 }
 
-void CMainFrame::OnPListItemChanged(wxCommandEvent& e) {
+void CMainFrame::OnPListItemChanged(wxCommandEvent& e)
+{
 	//solve for LC index
 	//int lcIdx = libvlc_media_list_count(m_vlcMediaList)-idx-1;
 	//clear selection before setting new one
@@ -474,47 +467,67 @@ void CMainFrame::OnPListItemChanged(wxCommandEvent& e) {
 		//just hide display image
 		m_displayEventCatcher->SetPaintImage(false);
 		m_displayEventCatcher->Refresh();
-	}
-	else {
+	} else {
 		//show display image
 		m_displayEventCatcher->SetPaintImage(true);
 		m_displayEventCatcher->Refresh();
 	}
 }
 
-void CMainFrame::OnQuitApp(wxCloseEvent& e) {
+void CMainFrame::OnQuitApp(wxCloseEvent& e)
+{
 	Destroy();
 }
 
-void CMainFrame::OnEraseBGEventCatcher(wxEraseEvent& event) {
+void CMainFrame::OnEraseBGEventCatcher(wxEraseEvent& event)
+{
 }
 
-void CMainFrame::OnPaintEventCatecher(wxPaintEvent& event) {
+void CMainFrame::OnPaintEventCatecher(wxPaintEvent& event)
+{
 
 }
 
-void CMainFrame::OnCloseApp(wxCommandEvent& e) {
+void CMainFrame::OnCloseApp(wxCommandEvent& e)
+{
 	Close();
 }
 
-void CMainFrame::InitConfig() {
+void CMainFrame::InitConfig()
+{
 	m_plPanel->Show(false);//should be according to settings
 }
 
-void CMainFrame::OnPlayerPlaying(wxCommandEvent& e) {
+void CMainFrame::OnPlayerPlaying(wxCommandEvent& e)
+{
 
 }
 
-void CMainFrame::OnPlayerEndReached(wxCommandEvent& e) {
+void CMainFrame::OnPlayerEndReached(wxCommandEvent& e)
+{
 	//show display image
 	m_displayEventCatcher->SetPaintImage(true);
 	m_displayEventCatcher->Refresh();
 }
 
-void CMainFrame::OnOpenFile(wxCommandEvent& event) {
+void CMainFrame::OnOpenFile(wxCommandEvent& event)
+{
+	wxFileDialog dlg(this, _("Open Media Files"), "", "","Media Files (*.*)|*.*", wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_CHANGE_DIR|wxFD_MULTIPLE);
+	if (dlg.ShowModal() == wxID_CANCEL)
+		return; // the user changed idea...
+	wxArrayString paths ;
+	dlg.GetPaths(paths);
+
+	wxMessageDialog* confirmdlg = new wxMessageDialog(this, _("Clear The Playlist Before Append?"), _("Confirm Action"), wxYES_NO|wxICON_INFORMATION|wxNO_DEFAULT);
+	if(confirmdlg->ShowModal()!=wxID_YES) {
+		LoadFiles(paths, true);
+	} else
+		LoadFiles(paths, false);
+
 }
 
-void CMainFrame::OnOpenStream(wxCommandEvent& event) {
+void CMainFrame::OnOpenStream(wxCommandEvent& event)
+{
 	wxString strInit = wxT("");
 	// Read some text
 	if(wxTheClipboard->Open()) {
@@ -546,15 +559,15 @@ void CMainFrame::OnOpenStream(wxCommandEvent& event) {
 		libvlc_media_player_set_media(m_mediaPlayer, m_media);
 		libvlc_media_player_play(m_mediaPlayer);
 		libvlc_media_release(m_media);
-	}
-	else {
+	} else {
 		wxMessageBox(_("URL Error: Cannot continue!"));
 	}
 }
 
-void CMainFrame::OnBeginDragFiles(wxListEvent& e) {
+void CMainFrame::OnBeginDragFiles(wxListEvent& e)
+{
 	wxFileDataObject files;
-	for(size_t i=0; i<m_fileList->GetSelectedItemCount(); i++) {
+	for(int i=0; i<m_fileList->GetSelectedItemCount(); i++) {
 		files.AddFile(m_fileList->GetItemText(i, 4)); //col with idx 4 contains path
 	}
 
@@ -564,14 +577,77 @@ void CMainFrame::OnBeginDragFiles(wxListEvent& e) {
 
 }
 
-void CMainFrame::OnHoverCtrl(wxMouseEvent& event) {
-	if(IsFullScreen()) { 
+void CMainFrame::OnHoverCtrl(wxMouseEvent& event)
+{
+	if(IsFullScreen()) {
 		if(m_ctrlPopup->IsShown())
-			m_ctrlPopup->HideWithEffect(wxSHOW_EFFECT_SLIDE_TO_LEFT, 900);//hide the window 
-		else{
+			m_ctrlPopup->Hide();//hide the window
+		else {
 			m_ctrlPopup->SetPosition(wxGetMousePosition());
-			m_ctrlPopup->ShowWithEffect(wxSHOW_EFFECT_BLEND, 900); 			
+			m_ctrlPopup->Show();
 		}
+	}
+
+	event.Skip();
+}
+
+void CMainFrame::LoadFiles(const wxArrayString& paths, bool clearPList)
+{
+	//should we clear PList?
+	if(clearPList) {
+		//clear current Item
+		m_fileList->DeleteAllItems();
+		libvlc_media_list_player_stop(m_vlcMediaListPlayer);
+		libvlc_media_list_lock(m_vlcMediaList);
+		int mCount = libvlc_media_list_count(m_vlcMediaList);
+		libvlc_media_list_unlock(m_vlcMediaList);
+		for(int i=0; i<mCount; i++) {
+			libvlc_media_list_lock(m_vlcMediaList);
+			libvlc_media_list_remove_index(m_vlcMediaList, i);
+			libvlc_media_list_unlock(m_vlcMediaList);
+		}
+	}
+	//load the files
+	for(size_t i=0; i<paths.GetCount(); i++) {
+		if(paths[i].AfterLast('.').Lower()==wxT("mp3")||paths[i].AfterLast('.').Lower()==wxT("ogg")
+		   ||paths[i].AfterLast('.').Lower()==wxT("flv")||paths[i].AfterLast('.').Lower()==wxT("mp4")
+		   ||paths[i].AfterLast('.').Lower()==wxT("mov")||paths[i].AfterLast('.').Lower()==wxT("wmv")
+		  ) {
+
+			//Set up media for this path
+			m_media = libvlc_media_new_path(m_vlcInst, paths[i].ToStdString().c_str());
+			libvlc_media_parse(m_media);
+
+			//add to media list
+			//lock first
+			libvlc_media_list_lock(m_vlcMediaList);
+			libvlc_media_list_add_media(m_vlcMediaList, m_media);
+			libvlc_media_list_unlock(m_vlcMediaList);
+
+			long itemIndex = m_fileList->InsertItem(0, wxString(libvlc_media_get_meta(m_media,libvlc_meta_TrackNumber))); //Col 1 for track
+			m_fileList->SetItem(itemIndex, 1, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Title))); //Col 1 for title
+			m_fileList->SetItem(itemIndex, 2, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Artist))); //col 2 for artist
+			m_fileList->SetItem(itemIndex, 3, wxString(libvlc_media_get_meta(m_media,libvlc_meta_Album))); //col 3 for Album
+			m_fileList->SetItem(itemIndex, 4, paths[i]); //col 4 for Full Path
+
+		}
+	}
+
+//set col width
+	m_fileList->SetColumnWidth(0, wxLIST_AUTOSIZE);
+	m_fileList->SetColumnWidth(1, wxLIST_AUTOSIZE);
+	m_fileList->SetColumnWidth(2, wxLIST_AUTOSIZE);
+	m_fileList->SetColumnWidth(3, wxLIST_AUTOSIZE);
+	m_fileList->SetColumnWidth(4, wxLIST_AUTOSIZE);
+}
+
+void CMainFrame::OnKeyPressed(wxKeyEvent& event)
+{
+	if(event.GetKeyCode() == WXK_ESCAPE)
+	{
+		//process escape key
+		if(IsFullScreen())
+			ToggleScreen();
 	}
 	event.Skip();
 }
@@ -580,7 +656,8 @@ void CMainFrame::OnHoverCtrl(wxMouseEvent& event) {
 
 //===========+VLC Events!+=========================
 
-void CatchMediaEvents(const libvlc_event_t* event, void* data) {
+void CatchMediaEvents(const libvlc_event_t* event, void* data)
+{
 	//see for list of events http://www.videolan.org/developers/vlc/doc/doxygen/html/group__libvlc__event.html#ga88990ac48895aa07caece9eb75c2f2da
 	if(wxTheApp==NULL||wxTheApp->GetTopWindow()==NULL)
 		return ; //no app instance to send event to (destroyed already!)

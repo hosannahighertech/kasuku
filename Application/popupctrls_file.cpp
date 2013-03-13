@@ -78,6 +78,7 @@ VideoCtrlPopupBase::VideoCtrlPopupBase(wxWindow* parent,long style)
     Centre(wxBOTH);
     // Connect events
     this->Connect(wxEVT_LEAVE_WINDOW, wxMouseEventHandler(VideoCtrlPopupBase::OnLeaveWindow), NULL, this);
+    m_ctrlPanel->Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(VideoCtrlPopupBase::OnRightClick), NULL, this);
     m_positionctrl->Connect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(VideoCtrlPopupBase::OnPositionChanged), NULL, this);
     m_previousButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(VideoCtrlPopupBase::OnPrevious), NULL, this);
     m_playPauseButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(VideoCtrlPopupBase::OnPlayPause), NULL, this);
@@ -92,6 +93,7 @@ VideoCtrlPopupBase::VideoCtrlPopupBase(wxWindow* parent,long style)
 VideoCtrlPopupBase::~VideoCtrlPopupBase()
 {
     this->Disconnect(wxEVT_LEAVE_WINDOW, wxMouseEventHandler(VideoCtrlPopupBase::OnLeaveWindow), NULL, this);
+    m_ctrlPanel->Disconnect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(VideoCtrlPopupBase::OnRightClick), NULL, this);
     m_positionctrl->Disconnect(wxEVT_SCROLL_CHANGED, wxScrollEventHandler(VideoCtrlPopupBase::OnPositionChanged), NULL, this);
     m_previousButton->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(VideoCtrlPopupBase::OnPrevious), NULL, this);
     m_playPauseButton->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(VideoCtrlPopupBase::OnPlayPause), NULL, this);
