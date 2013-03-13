@@ -3,23 +3,27 @@
 
 #include <wx/wx.h>
 #include <wx/sizer.h>
- 
-class KImagePanel : public wxPanel
-{
-    wxImage m_image;
-    wxBitmap m_resized;
-    int m_bmpWidth, m_bmpHeight;
-    
-public:
-    KImagePanel(wxWindow* parent, wxString file=wxString(), wxBitmapType format=wxBITMAP_TYPE_ANY);
-    
-    void paintEvent(wxPaintEvent & evt);
-    void paintNow();
-    void OnSize(wxSizeEvent& event);
-    void render(wxDC& dc);
+
+class KImagePanel : public wxPanel {
 	
-	void InitBindEvents(); 
-     
-}; 
- 
+private:
+	wxImage m_image;
+	wxBitmap m_resized;
+	int m_bmpWidth, m_bmpHeight;
+	bool m_paintImage;
+
+public:
+	KImagePanel(wxWindow* parent, wxString file=wxString(), wxBitmapType format=wxBITMAP_TYPE_ANY);
+
+	void PaintEvent(wxPaintEvent & evt);
+	void EraseBGEvent(wxEraseEvent & evt);
+	void PaintNow();
+	void OnSize(wxSizeEvent& event);
+	void Render(wxDC& dc);
+
+	void InitBindEvents();
+	void SetPaintImage(bool paintImage=true);
+
+};
+
 #endif // KIMAGEPANEL_H

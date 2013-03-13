@@ -1,1 +1,1 @@
-../working/cmainframebase.o ../working/backend.o ../working/c_application.o ../working/k_splash.o ../working/cmainframe.o ../working/k_image_panel.o ../working/k_file_importer.o
+../working/cmainframebase.o ../working/backend.o ../working/c_application.o ../working/k_splash.o ../working/cmainframe.o ../working/k_image_panel.o ../working/k_file_importer.o ../working/k_drop_target.o ../working/popupctrls_file_application_bitmaps.o ../working/popupctrls_file.o ../working/videoctrlpopup.o

@@ -1,5 +1,13 @@
+///////////////////////////////////////////////////////////////////////////
+// C++ code generated with wxFormBuilder (version Oct  8 2012)
+// http://www.wxformbuilder.org/
+//
+// PLEASE DO "NOT" EDIT THIS FILE!
+///////////////////////////////////////////////////////////////////////////
+
 #include "cmainframebase.h"
 
+///////////////////////////////////////////////////////////////////////////
 
 CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
 {
@@ -9,23 +17,31 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	m_menubar = new wxMenuBar( 0 );
 	m_musicMenu = new wxMenu();
+	wxMenuItem* m_m_openFile;
+	m_m_openFile = new wxMenuItem( m_musicMenu, wxID_OPEN, wxString( _("Open File") ) + wxT('\t') + wxT("Ctrl+O"), wxEmptyString, wxITEM_NORMAL );
+	m_musicMenu->Append( m_m_openFile );
+	
+	wxMenuItem* m_openStream;
+	m_openStream = new wxMenuItem( m_musicMenu, wxID_ANY, wxString( _("Open Location") ) + wxT('\t') + wxT("CTRL+Shift+O"), wxEmptyString, wxITEM_NORMAL );
+	m_musicMenu->Append( m_openStream );
+	
+	wxMenuItem* m_openDisk;
+	m_openDisk = new wxMenuItem( m_musicMenu, wxID_ANY, wxString( _("Open Disc") ) , wxEmptyString, wxITEM_NORMAL );
+	m_musicMenu->Append( m_openDisk );
+	
 	wxMenuItem* m_LoadFolder;
-	m_LoadFolder = new wxMenuItem( m_musicMenu, wxID_ANY, wxString( _("Import Directory") ) + wxT('\t') + wxT("CTRL+L"), wxEmptyString, wxITEM_NORMAL );
+	m_LoadFolder = new wxMenuItem( m_musicMenu, wxID_ANY, wxString( _("Import Directory") ) + wxT('\t') + wxT("CTRL+I"), wxEmptyString, wxITEM_NORMAL );
 	m_musicMenu->Append( m_LoadFolder );
 	
 	wxMenuItem* m_importPL;
 	m_importPL = new wxMenuItem( m_musicMenu, wxID_ANY, wxString( _("Import Playlist") ) + wxT('\t') + wxT("CTRL+Shift+P"), wxEmptyString, wxITEM_NORMAL );
 	m_musicMenu->Append( m_importPL );
 	
-	wxMenuItem* m_openStream;
-	m_openStream = new wxMenuItem( m_musicMenu, wxID_ANY, wxString( _("Open Location") ) + wxT('\t') + wxT("CTRL+O"), wxEmptyString, wxITEM_NORMAL );
-	m_musicMenu->Append( m_openStream );
-	
 	wxMenuItem* m_menuExit;
 	m_menuExit = new wxMenuItem( m_musicMenu, wxID_EXIT, wxString( _("Quit") ) + wxT('\t') + wxT("Ctrl+Q"), wxEmptyString, wxITEM_NORMAL );
 	m_musicMenu->Append( m_menuExit );
 	
-	m_menubar->Append( m_musicMenu, _("Music") ); 
+	m_menubar->Append( m_musicMenu, _("Media") ); 
 	
 	m_helpMenu = new wxMenu();
 	wxMenuItem* m_about;
@@ -41,22 +57,31 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	this->SetMenuBar( m_menubar );
 	
 	m_videoPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNO_BORDER|wxTAB_TRAVERSAL );
+	m_videoPanel->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
+	
 	m_mgr.AddPane( m_videoPanel, wxAuiPaneInfo() .Name( wxT("player_pane") ).Left() .CaptionVisible( false ).PinButton( true ).PaneBorder( false ).Dock().Resizable().FloatingSize( wxDefaultSize ).DockFixed( false ).CentrePane() );
 	
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer( wxVERTICAL );
 	
-	m_display = new KImagePanel(m_videoPanel);
-	bSizer2->Add( m_display, 1, wxALL|wxEXPAND, 0 );
+	m_display = new wxPanel( m_videoPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNO_BORDER|wxTAB_TRAVERSAL );
+	m_display->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
+	m_display->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
 	
 	wxBoxSizer* bSizer9;
 	bSizer9 = new wxBoxSizer( wxVERTICAL );
 	
-	m_displayEventCatcher = new wxPanel( m_display, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	 m_displayEventCatcher= new KImagePanel( m_display);
+	m_displayEventCatcher->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
 	m_displayEventCatcher->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_3DDKSHADOW ) );
 	
-	bSizer9->Add( m_displayEventCatcher, 1, wxEXPAND | wxALL, 0 );	
-	bSizer2->Add( bSizer9, 0, wxEXPAND, 5 );
+	bSizer9->Add( m_displayEventCatcher, 1, wxALL|wxEXPAND, 0 );
+	
+	
+	m_display->SetSizer( bSizer9 );
+	m_display->Layout();
+	bSizer9->Fit( m_display );
+	bSizer2->Add( m_display, 1, wxALL|wxEXPAND, 0 );
 	
 	m_controlpanel = new wxPanel( m_videoPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer6;
@@ -154,13 +179,13 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	// Connect Events
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( CMainFrameBase::OnQuitApp ) );
+	this->Connect( m_m_openFile->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenFile ) );
+	this->Connect( m_openStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenStream ) );
 	this->Connect( m_LoadFolder->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_importPL->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
-	this->Connect( m_openStream->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Connect( m_about->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
-	m_displayEventCatcher->Connect( wxEVT_ERASE_BACKGROUND, wxEraseEventHandler( CMainFrameBase::OnEraseBGEventCatcher ), NULL, this );
 	m_displayEventCatcher->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
-	m_displayEventCatcher->Connect( wxEVT_PAINT, wxPaintEventHandler( CMainFrameBase::OnPaintEventCatecher ), NULL, this );
+	m_displayEventCatcher->Connect( wxEVT_MOTION, wxMouseEventHandler( CMainFrameBase::OnHoverCtrl ), NULL, this );
 	m_displayEventCatcher->Connect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_playPauseButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayPause ), NULL, this );
 	m_previousButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPrevious ), NULL, this );
@@ -169,6 +194,7 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_toggleVideoButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnToggleVideo ), NULL, this );
 	m_showPlayListButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayListShowHide ), NULL, this );
 	m_loopButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnLoop ), NULL, this );
+	m_fileList->Connect( wxEVT_COMMAND_LIST_BEGIN_DRAG, wxListEventHandler( CMainFrameBase::OnBeginDragFiles ), NULL, this );
 	m_fileList->Connect( wxEVT_COMMAND_LIST_ITEM_ACTIVATED, wxListEventHandler( CMainFrameBase::OnMediaDClicked ), NULL, this );
 }
 
@@ -176,13 +202,13 @@ CMainFrameBase::~CMainFrameBase()
 {
 	// Disconnect Events
 	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( CMainFrameBase::OnQuitApp ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
+	this->Disconnect( wxID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenFile ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnOpenStream ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnLoadDir ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( CMainFrameBase::OnAboutUs ) );
-	m_displayEventCatcher->Disconnect( wxEVT_ERASE_BACKGROUND, wxEraseEventHandler( CMainFrameBase::OnEraseBGEventCatcher ), NULL, this );
 	m_displayEventCatcher->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( CMainFrameBase::OnFullVideoView ), NULL, this );
-	m_displayEventCatcher->Disconnect( wxEVT_PAINT, wxPaintEventHandler( CMainFrameBase::OnPaintEventCatecher ), NULL, this );
+	m_displayEventCatcher->Disconnect( wxEVT_MOTION, wxMouseEventHandler( CMainFrameBase::OnHoverCtrl ), NULL, this );
 	m_displayEventCatcher->Disconnect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( CMainFrameBase::OnRightClickMenu ), NULL, this );
 	m_playPauseButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayPause ), NULL, this );
 	m_previousButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPrevious ), NULL, this );
@@ -191,6 +217,7 @@ CMainFrameBase::~CMainFrameBase()
 	m_toggleVideoButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnToggleVideo ), NULL, this );
 	m_showPlayListButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnPlayListShowHide ), NULL, this );
 	m_loopButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CMainFrameBase::OnLoop ), NULL, this );
+	m_fileList->Disconnect( wxEVT_COMMAND_LIST_BEGIN_DRAG, wxListEventHandler( CMainFrameBase::OnBeginDragFiles ), NULL, this );
 	m_fileList->Disconnect( wxEVT_COMMAND_LIST_ITEM_ACTIVATED, wxListEventHandler( CMainFrameBase::OnMediaDClicked ), NULL, this );
 	
 	m_mgr.UnInit();

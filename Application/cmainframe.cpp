@@ -2,17 +2,22 @@
 #include <wx/msgdlg.h>
 #include <wx/aboutdlg.h>
 #include <wx/textfile.h>
+#include <wx/clipbrd.h>
+#include <wx/url.h>
 #include <wx/app.h>
 #include <wx/sysopt.h>
+#include <wx/dnd.h>
 #include "images.h"
 #include "k_config.h"
 #include "k_file_importer.h"
+#include "k_drop_target.h"
 
 wxDEFINE_EVENT(KEVT_MEDIA_PLAY_ON_PROGRESS, wxCommandEvent);
 wxDEFINE_EVENT(KEVT_MEDIA_PLAY_FINISHED, wxCommandEvent);
 wxDEFINE_EVENT(KEVT_MEDIA_LIST_NEXT_ITEM_SET, wxCommandEvent);
+wxDEFINE_EVENT(KEVT_MEDIA_PLAY_PLAYING, wxCommandEvent);
 
-CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {   
+CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	//splash
 	wxBitmap bmpSplash = wxBITMAP_PNG(splash);
 	wxIcon appIcon;
@@ -48,6 +53,13 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	m_mediaPosition->SetValue(0);
 
 	m_volumeSlider->SetRange(0, VOLUME_MAX);
+	
+	//popup
+	m_ctrlPopup = new VideoCtrlPopup(this);
+	m_ctrlPopup->m_volumeCtrl->SetRange(0, m_volumeSlider->GetMax());
+	m_ctrlPopup->m_positionctrl->SetRange(0, m_mediaPosition->GetMax());
+	m_ctrlPopup->Hide();
+	
 	//VLC Stuffs
 	InitVLC();
 	m_pbMode = libvlc_playback_mode_default;
@@ -57,10 +69,15 @@ CMainFrame::CMainFrame(wxWindow* parent):CMainFrameBase(parent) {
 	Maximize();
 
 	m_splash->Destroy();//destroy splash and show the app
-	
+
 	//system options
-	wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);  	
-	
+	wxSystemOptions::SetOption(wxT("msw.window.no-clip-children"), 1);
+
+	//set drop target to receive dropped files
+	KDropTarget* dnd = new KDropTarget(m_fileList);
+	dnd->InitVLCArgs(m_vlcInst, m_vlcMediaList);
+	m_fileList->SetDropTarget(dnd);
+
 }
 
 void CMainFrame::OnMediaDClicked(wxListEvent& e) {
@@ -81,7 +98,7 @@ void CMainFrame::OnMediaDClicked(wxListEvent& e) {
 	//media list add them in opposite way so that first in wxLC is last in media list
 	int idx = libvlc_media_list_count(m_vlcMediaList) - e.GetIndex() - 1;//remember its zero indexed list?
 	libvlc_media_list_player_play_item_at_index(m_vlcMediaListPlayer, idx);
-	libvlc_media_add_option(libvlc_media_player_get_media(m_mediaPlayer), "--audio-visual visualizer --effect-list spectrum");
+	libvlc_media_add_option(libvlc_media_player_get_media(m_mediaPlayer), " --audio-visual=visualizer");
 	wxSleep(1);
 	SetLabels();
 }
@@ -104,9 +121,14 @@ void CMainFrame::OnLoadDir(wxCommandEvent& event) {
 	//clear current Item
 	m_fileList->DeleteAllItems();
 	libvlc_media_list_player_stop(m_vlcMediaListPlayer);
-	for(int i=0; i<libvlc_media_list_count(m_vlcMediaList); i++)
+	libvlc_media_list_lock(m_vlcMediaList);
+	int mCount = libvlc_media_list_count(m_vlcMediaList);
+	libvlc_media_list_unlock(m_vlcMediaList);
+	for(int i=0; i<mCount; i++) {
+		libvlc_media_list_lock(m_vlcMediaList);
 		libvlc_media_list_remove_index(m_vlcMediaList, i);
-
+		libvlc_media_list_unlock(m_vlcMediaList);
+	}
 //should we recurse in subfolders?
 	wxMessageDialog* confirmdlg = new wxMessageDialog(this, _("Do you want to add media in subfolders also?"), _("Confirm Recursing"), wxYES_NO|wxICON_INFORMATION|wxNO_DEFAULT);
 	if(confirmdlg->ShowModal()!=wxID_YES) {
@@ -137,7 +159,7 @@ void CMainFrame::OnLoadDir(wxCommandEvent& event) {
 
 			}
 			cont = dir.GetNext(&filename);
-		} 
+		}
 	}
 	else {
 		KFileImporter traverser(m_fileList, m_vlcInst, m_vlcMediaList);
@@ -162,6 +184,8 @@ void CMainFrame::OnVideoSizeChanged(wxSizeEvent& e) {
 void CMainFrame::InitBindEvents() {
 	Bind(KEVT_MEDIA_PLAY_ON_PROGRESS, &CMainFrame::OnUpdateMediaPosition, this, wxID_ANY);
 	Bind(KEVT_MEDIA_LIST_NEXT_ITEM_SET, &CMainFrame::OnPListItemChanged, this, wxID_ANY);
+	Bind(KEVT_MEDIA_PLAY_FINISHED, &CMainFrame::OnPlayerEndReached, this, wxID_ANY);
+	Bind(KEVT_MEDIA_PLAY_PLAYING, &CMainFrame::OnPlayerPlaying, this, wxID_ANY);
 
 	m_volumeSlider->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &CMainFrame::OnVolumeChanging, this);
 	m_mediaPosition->Bind(wxEVT_COMMAND_SLIDER_UPDATED, &CMainFrame::OnMediaSliderMoved, this);
@@ -178,6 +202,8 @@ void CMainFrame::OnRightClickMenu(wxMouseEvent& event) {
 
 void CMainFrame::OnMediaSliderMoved(wxCommandEvent& event) {
 	libvlc_media_player_set_position(m_mediaPlayer, (float) event.GetInt() / (float) TIMELINE_MAX);
+	//syc the popup controls
+	m_ctrlPopup->m_positionctrl->SetValue(m_mediaPosition->GetValue());
 }
 
 void CMainFrame::OnLoop(wxCommandEvent& event) {
@@ -244,9 +270,10 @@ void CMainFrame::OnPlayPause(wxCommandEvent& event) {
 		//is playing change the icon to pause and play
 		m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_pause));
 		//play
-		libvlc_media_player_play(m_mediaPlayer);
+		libvlc_media_list_player_play(m_vlcMediaListPlayer);
 
 	}
+	SetLabels();
 }
 
 void CMainFrame::OnRandom(wxCommandEvent& event) {
@@ -255,6 +282,9 @@ void CMainFrame::OnRandom(wxCommandEvent& event) {
 void CMainFrame::OnVolumeChanging(wxCommandEvent& event) {
 	//int vol = event.GetPosition();
 	int vol = m_volumeSlider->GetValue();
+	
+	m_ctrlPopup->m_volumeCtrl->SetValue(vol);//sync popup ctrl
+	
 	if(libvlc_audio_set_volume(m_mediaPlayer, vol)!=0)
 		wxMessageBox(_("Failed to Set Volume!"), _("Error!"));
 }
@@ -265,6 +295,10 @@ void CMainFrame::OnStop(wxCommandEvent& event) {
 	//change button to player
 	m_playPauseButton->SetBitmap(wxBITMAP_PNG(control_play));
 	m_mediaPosition->SetValue(0);
+	SetLabels();
+	//show display image
+	m_displayEventCatcher->SetPaintImage(true);
+	m_displayEventCatcher->Refresh();
 }
 
 void CMainFrame::OnToggleVideo(wxCommandEvent& event) {
@@ -284,11 +318,13 @@ void CMainFrame::ToggleScreen() {
 		m_plPanel->Show(true);
 		m_controlpanel->Show(true);
 		ShowFullScreen(false);//full screen view
+		if(m_ctrlPopup)
+			m_ctrlPopup->HideWithEffect(wxSHOW_EFFECT_SLIDE_TO_LEFT, 900);//hide the window 
 	}
 }
 
 void CMainFrame::PlayMedia(const wxString& path) {
-	libvlc_media_list_player_play(m_vlcMediaListPlayer);
+	libvlc_media_player_stop(m_mediaPlayer);
 	SetLabels();
 }
 
@@ -300,8 +336,8 @@ CMainFrame::~CMainFrame() {
 
 void CMainFrame::InitVLC() {
 	//create media player instance
-	//const char* argv[] = {" --audio-visual visualizer --effect-list spectrum"}; //NULL default
-	m_vlcInst = libvlc_new(0, /*argv*/ NULL);
+	const char* argv[2] = {" --audio-visual visualizer --effect-list spectrum", NULL};  //NULL default
+	m_vlcInst = libvlc_new(0, argv /*NULL*/);
 	m_mediaPlayer = libvlc_media_player_new(m_vlcInst);
 	m_vlcEvtMgr = libvlc_media_player_event_manager(m_mediaPlayer);
 
@@ -344,6 +380,7 @@ void CMainFrame::OnUpdateMediaPosition(wxCommandEvent& e) {
 	if(pos < 0.0) pos = 0.0;
 	if(pos > 1.0) pos = 1.0;
 	m_mediaPosition->SetValue((int)(pos * TIMELINE_MAX));
+	m_ctrlPopup->m_positionctrl->SetValue(m_mediaPosition->GetValue());
 	//count down
 	int secs = libvlc_media_player_get_length(m_mediaPlayer)*pos/1000;
 	int hour=(secs/60/60);
@@ -360,6 +397,9 @@ void CMainFrame::SetLabels() {
 		//set lable empty
 		m_timeLength->SetLabel(wxT(""));
 		//end of game
+		//just display image
+		m_displayEventCatcher->SetPaintImage(true);
+		m_displayEventCatcher->Refresh();
 		return ;
 	}
 	int hour=(secs/60/60);
@@ -367,14 +407,7 @@ void CMainFrame::SetLabels() {
 	int sec = secs % 60;
 	wxString label = wxString::Format(wxT("%d:%d:%d"), hour, min, sec);
 	m_timeLength->SetLabel(label);
-	
-	//if the panel have no video do show kasuku foto
-	//XilasZ_work in vlc IRC:has_vout return the number of vout. it's not the same thing, you can have a vout but no video track (audio file with visualization for instance)
-	if(!libvlc_media_player_has_vout(m_mediaPlayer))
-	{
-		//show image here!
-	}
-	
+
 	Layout();
 }
 
@@ -417,7 +450,7 @@ void CMainFrame::OnPListItemChanged(wxCommandEvent& e) {
 	for(; item<m_fileList->GetItemCount(); item++) {
 
 		m_fileList->SetItemState(item, 0, wxLIST_STATE_SELECTED/*|wxLIST_STATE_FOCUSED*/);//clear selection
-		//reset colors back to sys colors 
+		//reset colors back to sys colors
 		m_fileList->SetItemBackgroundColour(item, wxSystemSettingsNative::GetColour(wxSYS_COLOUR_WINDOW));
 		m_fileList->SetItemTextColour(item, wxSystemSettingsNative::GetColour(wxSYS_COLOUR_WINDOWTEXT));
 	}
@@ -429,28 +462,120 @@ void CMainFrame::OnPListItemChanged(wxCommandEvent& e) {
 	//m_fileList->SetItemState(idx, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 	m_fileList->SetItemBackgroundColour(idx, *wxBLACK);
 	m_fileList->SetItemTextColour(idx, *wxGREEN);
+	m_fileList->EnsureVisible(idx);
 	m_fileList->SetFocus();
+
+	//if the panel have no video do show kasuku foto
+	//XilasZ_work in vlc IRC:has_vout return the number of vout. it's not the same thing, you can have a vout but no video track (audio file with visualization for instance)
+	wxSleep(1); //it indeed have to parse it!
+	bool isVout = libvlc_media_player_has_vout(m_mediaPlayer);
+	bool hasVTrack = libvlc_video_get_track_count(m_mediaPlayer);
+	if(m_mediaPlayer && (isVout || hasVTrack)) {
+		//just hide display image
+		m_displayEventCatcher->SetPaintImage(false);
+		m_displayEventCatcher->Refresh();
+	}
+	else {
+		//show display image
+		m_displayEventCatcher->SetPaintImage(true);
+		m_displayEventCatcher->Refresh();
+	}
 }
 
 void CMainFrame::OnQuitApp(wxCloseEvent& e) {
 	Destroy();
 }
 
-void CMainFrame::OnEraseBGEventCatcher(wxEraseEvent& event)
-{
+void CMainFrame::OnEraseBGEventCatcher(wxEraseEvent& event) {
 }
 
 void CMainFrame::OnPaintEventCatecher(wxPaintEvent& event) {
+
 }
 
 void CMainFrame::OnCloseApp(wxCommandEvent& e) {
 	Close();
 }
 
-void CMainFrame::InitConfig()
-{
+void CMainFrame::InitConfig() {
 	m_plPanel->Show(false);//should be according to settings
 }
+
+void CMainFrame::OnPlayerPlaying(wxCommandEvent& e) {
+
+}
+
+void CMainFrame::OnPlayerEndReached(wxCommandEvent& e) {
+	//show display image
+	m_displayEventCatcher->SetPaintImage(true);
+	m_displayEventCatcher->Refresh();
+}
+
+void CMainFrame::OnOpenFile(wxCommandEvent& event) {
+}
+
+void CMainFrame::OnOpenStream(wxCommandEvent& event) {
+	wxString strInit = wxT("");
+	// Read some text
+	if(wxTheClipboard->Open()) {
+		if(wxTheClipboard->IsSupported(wxDF_TEXT)) {
+			wxTextDataObject data;
+			wxTheClipboard->GetData(data);
+			strInit = data.GetText();
+		}
+		wxTheClipboard->Close();
+	}
+
+	wxString strUrl = wxGetTextFromUser(_("Please Enter the URL to stream"), _("Open Stream"), strInit);
+	if(strUrl.IsEmpty()) {
+		//wxMessageBox(_("Empty URLs are not allowed!"));
+		return ;
+	}
+	wxURL url(strUrl);
+	if(url.IsOk()) {
+		//open libvlc urls
+		m_media = libvlc_media_new_location(m_vlcInst, strUrl.ToStdString().c_str());
+		libvlc_media_player_set_media(m_mediaPlayer, m_media);
+		libvlc_media_player_play(m_mediaPlayer);
+		libvlc_media_release(m_media);
+		wxSleep(60);
+		libvlc_media_list_t* list =  libvlc_media_subitems(libvlc_media_player_get_media(m_mediaPlayer));
+		libvlc_media_list_lock(list);
+		m_media = libvlc_media_list_item_at_index(list, 0);
+		libvlc_media_list_unlock(list);
+		libvlc_media_player_set_media(m_mediaPlayer, m_media);
+		libvlc_media_player_play(m_mediaPlayer);
+		libvlc_media_release(m_media);
+	}
+	else {
+		wxMessageBox(_("URL Error: Cannot continue!"));
+	}
+}
+
+void CMainFrame::OnBeginDragFiles(wxListEvent& e) {
+	wxFileDataObject files;
+	for(size_t i=0; i<m_fileList->GetSelectedItemCount(); i++) {
+		files.AddFile(m_fileList->GetItemText(i, 4)); //col with idx 4 contains path
+	}
+
+	wxDropSource ds(m_fileList);
+	ds.SetData(files);
+	ds.DoDragDrop();
+
+}
+
+void CMainFrame::OnHoverCtrl(wxMouseEvent& event) {
+	if(IsFullScreen()) { 
+		if(m_ctrlPopup->IsShown())
+			m_ctrlPopup->HideWithEffect(wxSHOW_EFFECT_SLIDE_TO_LEFT, 900);//hide the window 
+		else{
+			m_ctrlPopup->SetPosition(wxGetMousePosition());
+			m_ctrlPopup->ShowWithEffect(wxSHOW_EFFECT_BLEND, 900); 			
+		}
+	}
+	event.Skip();
+}
+
 
 
 //===========+VLC Events!+=========================
@@ -477,6 +602,12 @@ void CatchMediaEvents(const libvlc_event_t* event, void* data) {
 		int idx = libvlc_media_list_index_of_item((libvlc_media_list_t*)data, media);
 		//set index
 		evt.SetInt(idx);
+		wxTheApp->GetTopWindow()->GetEventHandler()->AddPendingEvent(evt);
+		break ;
+	}
+	case libvlc_MediaPlayerPlaying   : {
+		wxCommandEvent evt(KEVT_MEDIA_PLAY_PLAYING, wxID_ANY);
+		//set number
 		wxTheApp->GetTopWindow()->GetEventHandler()->AddPendingEvent(evt);
 		break ;
 	}

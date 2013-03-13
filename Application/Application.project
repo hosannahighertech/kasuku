@@ -23,6 +23,8 @@
     <File Name="k_image_panel.cpp"/>
     <File Name="k_file_importer.h"/>
     <File Name="k_file_importer.cpp"/>
+    <File Name="k_drop_target.h"/>
+    <File Name="k_drop_target.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="resources">
     <File Name="cmainframebase.fbp"/>
@@ -113,4 +115,16 @@
     </Configuration>
   </Settings>
   <VirtualDirectory Name="Dialogs"/>
+  <VirtualDirectory Name="wxcrafter">
+    <File Name="popupctrls_file.wxcp"/>
+    <VirtualDirectory Name="resources">
+      <File Name="popupctrls_file_application_bitmaps.cpp"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="base">
+      <File Name="popupctrls_file.h"/>
+      <File Name="popupctrls_file.cpp"/>
+    </VirtualDirectory>
+    <File Name="videoctrlpopup.cpp"/>
+    <File Name="videoctrlpopup.h"/>
+  </VirtualDirectory>
 </CodeLite_Project>
